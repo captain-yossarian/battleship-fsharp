@@ -9,16 +9,21 @@ module GameTypes =
         | Submarine of Ship
         | Destroyer of Ship
 
-
     type Direction =
         | Vertical
         | Horizontal
 
     type Cell =
-        | Empty = 1
-        | Float = 2
-        | Sinking = 3
+        | Initial = 0
+        | Float = 1
+        | Sinking = 2
+        | Empty = 3
 
-    type Point = (sbyte * sbyte)
+    type Point = (int * int)
 
     type Board = int [] []
+
+    type GameState = { Points: Point []; Board: Board }
+
+    type BuildShip = BuildShip
+    type Actions = BuildShip * Point

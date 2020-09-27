@@ -1,9 +1,10 @@
 ﻿open Types.GameTypes
-open Utils.Board
-open Constants.Constants
+open State.Constants
+open State.Reducer
 
 [<EntryPoint>]
 let main argv =
-    printfn " %A" (drawCell board (3, 7))
-    printfn "hello"
+    let action = buildShip (Point(2,3))
+    let result = reducer action initialState
+    printfn "hello %A" result
     0 // return an integer exit code

@@ -21,16 +21,16 @@ module Board =
     open HandleArray
     open Types.GameTypes
 
+    let randomCell max = System.Random().Next(max)
 
-    let toCoordinates (index: sbyte) =
-        let row = index / 10y
-        let column = index % 10y
+    let toCoordinates (index: int) =
+        let row = index / 10
+        let column = index % 10
         Point(row, column)
 
-    let drawCell (board: Board) (point: int * int) =
+    let drawCell (board: Board) (point: Point) =
         let (row, column) = point
         let copied = Array.copy board.[row]
-
         replaceByIndex board row (replaceByIndex copied column 2)
 
     let render (board: Board) =
