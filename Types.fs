@@ -25,5 +25,4 @@ module GameTypes =
 
     type GameState = { Points: Point []; Board: Board }
 
-    type BuildShip = BuildShip
-    type Actions = BuildShip * Point
+    type Actions = BuildShips of Ships []

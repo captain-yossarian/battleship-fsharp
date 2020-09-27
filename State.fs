@@ -19,13 +19,14 @@ module Constants =
 module Reducer =
     open Types.GameTypes
     open Utils.Board
+    open Constants
 
-    let buildShip (point: Point) = (BuildShip, point)
+    let buildShips () = BuildShips ships
 
     let reducer (action: Actions) state =
         match action with
-        | (BuildShip, point) ->
+        | BuildShips ships ->
             let { Board = board } = state
+            let { Count = count; Size = size } = ships
 
-            { state with
-                  Board = drawCell board point }
+            state

@@ -31,6 +31,7 @@ module Board =
     let drawCell (board: Board) (point: Point) =
         let (row, column) = point
         let copied = Array.copy board.[row]
+
         replaceByIndex board row (replaceByIndex copied column 2)
 
     let render (board: Board) =
