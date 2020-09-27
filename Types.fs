@@ -1,10 +1,14 @@
+namespace Types
 
-module Types =
+module GameTypes =
+    type Ship = { Count: sbyte; Size: sbyte }
+
     type Ships =
-        | Carrier of sbyte * sbyte //q: 1, s: 4
-        | Cruiser of sbyte * sbyte //q: 2, s: 3
-        | Submarine of sbyte * sbyte //q: 3, s: 2
-        | Destroyer of sbyte * sbyte //q: 4, s: 1
+        | Carrier of Ship
+        | Cruiser of Ship
+        | Submarine of Ship
+        | Destroyer of Ship
+
 
     type Direction =
         | Vertical
