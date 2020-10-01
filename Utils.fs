@@ -42,6 +42,10 @@ module Board =
         let (row, column) = point
         board.[row].[column] = 0
 
+    let adjustBounds a shift =
+        let tmp = a + shift
+        if tmp < 0 || tmp > 9 then a else tmp
+
     let shiftPoint (point: Point) (shift: int * int) =
         let (row, column) = point
         let (rowShift, columnShift) = shift
@@ -49,15 +53,10 @@ module Board =
         let tmpRow = row + rowShift
         let tmpColumn = column + columnShift
 
-        let newRow = if tmpRow < 0 then row else tmpRow
-
-        let newColumn =
-            if tmpColumn < 0 then column else tmpColumn
-
-        Point(newRow, newColumn)
+        Point(adjustBounds row rowShift, adjustBounds column columnShift)
 
 
-    let scan (point: Point) (board: Board) (ship: Ship) =
+    let scan (board: Board) (point: Point) (ship: Ship) =
         let { Size = size } = ship
 
         let shifted = shiftPoint point
@@ -73,12 +72,9 @@ module Board =
             | SW -> shifted (1, -1)
             | NW -> shifted (-1, 1)
 
-
         WAYS
         |> Array.map callback
-        |> Array.forall (fun elem -> isEmpty board elem)
-
-
+        |> Array.forall (fun pnt -> isEmpty board pnt)
 
 
 
