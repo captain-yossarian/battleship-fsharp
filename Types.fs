@@ -3,15 +3,25 @@ namespace Types
 module GameTypes =
     type Ship = { Count: sbyte; Size: sbyte }
 
-    type Ships =
-        | Carrier of Ship
-        | Cruiser of Ship
-        | Submarine of Ship
-        | Destroyer of Ship
-
-    type Direction =
+    type Plane =
         | Vertical
         | Horizontal
+
+    type Cardinals =
+        | N
+        | E
+        | S
+        | W
+
+    type Directions =
+        | N
+        | E
+        | S
+        | W
+        | NE
+        | SE
+        | SW
+        | NW
 
     type Cell =
         | Initial = 0
@@ -25,4 +35,4 @@ module GameTypes =
 
     type GameState = { Points: Point []; Board: Board }
 
-    type Actions = BuildShips of Ships []
+    type Actions = BuildShips of Ship []

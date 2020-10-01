@@ -5,8 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Types.fs" />
-    <Compile Include="Utils.fs" />
     <Compile Include="State.fs" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="Reducer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
