@@ -1,5 +1,5 @@
 namespace Types
-
+//https://www.reddit.com/r/fsharp/comments/j3g2gn/please_review_my_code/
 module GameTypes =
     type Ship = { Count: sbyte; Size: sbyte }
 
