@@ -24,15 +24,15 @@ module GameTypes =
         | NW
 
     type Cell =
-        | Initial = 0
-        | Float = 1
-        | Sinking = 2
-        | Empty = 3
+        | Initial
+        | Float
+        | Sinking
+        | Empty
 
-    type Point = (int * int)
+    type Point = Point of (int * int)
 
     type Board = int [] []
 
-    type GameState = { Points: Point []; Board: Board }
+    type GameState = { Points: Point list; Board: Board }
 
     type Actions = BuildShips of Ship []

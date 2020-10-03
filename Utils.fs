@@ -1,10 +1,8 @@
 namespace Utils
 
 module HandleArray =
-    let splitArray (arr: 'a []) (index: int) =
-        let head = arr.[..index - 1]
-        let tail = arr.[index + 1..]
-        (head, tail)
+    let splitArray a i = Array.take i a, Array.skip (i + 1) a
+
 
     let removeByIndex (arr: 'a []) (index: int) =
         let (head, tail) = splitArray arr index
@@ -21,8 +19,9 @@ module Board =
     open Types.GameTypes
     open State.Constants
 
+    let random = System.Random()
 
-    let randomCell max = System.Random().Next(max)
+    let randomCell max () = random.Next(max)
 
     let randomDirection () =
         let index = randomCell 1
@@ -50,9 +49,6 @@ module Board =
         let (row, column) = point
         let (rowShift, columnShift) = shift
 
-        let tmpRow = row + rowShift
-        let tmpColumn = column + columnShift
-
         Point(adjustBounds row rowShift, adjustBounds column columnShift)
 
 
@@ -77,16 +73,12 @@ module Board =
         |> Array.forall (fun pnt -> isEmpty board pnt)
 
 
-
-
     let makePath (board: Board) (point: Point) (ship: Ship) =
         let direction = randomDirection ()
         let { Size = size } = ship
         match direction with
         | Vertical -> goVertical
         | Horizontal -> goHorizontal
-
-
 
     let render (board: Board) =
         printfn "Hello"
