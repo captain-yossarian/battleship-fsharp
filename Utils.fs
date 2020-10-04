@@ -41,7 +41,7 @@ module Board =
         let (rowShift, columnShift) = shift
         Point(row + rowShift, column + columnShift)
 
-    let blueprintPath directions point shift =
+    let movePointByIndex directions point shift =
         let movePointBy = movePoint point
         match directions with
         | N -> movePointBy (-shift, 0)
@@ -58,10 +58,9 @@ module Board =
         let bound = 1
 
         let predicate =
-            fun index -> blueprintPath direction point (index + bound)
+            fun index -> movePointByIndex direction point (index + bound)
 
         [ point ] @ List.init (size - bound) predicate
-
 
     let isInRange index = index >= 0 && index <= 9
 
@@ -69,30 +68,35 @@ module Board =
 
     let getCellBound point =
         WAYS
-        |> List.map (fun way -> blueprintPath way point 1)
-        |> List.filter isPointInRange
+        |> List.fold (fun acc way ->
+            match isPointInRange point with
+            | true -> acc @ [ movePointByIndex way point 1 ]
+            | false -> acc) List.empty
 
     let getBoundsPath shipPath =
         shipPath
         |> List.fold (fun acc point -> acc @ getCellBound point) List.empty
 
-    let isPointEmpty point (board: Board) = fst (board.TryGetValue(point))
-
+    let isCellEmpty point (board: Board) = fst (board.TryGetValue(point))
 
     let isPathSuccessful board path =
         path
-        |> List.forall (fun elem -> isPointEmpty elem board)
+        |> List.forall (fun elem -> isCellEmpty elem board)
 
     let drawCell cell (board: Board) point = board.Add(point, cell)
 
     let drawPath path board cell = path |> List.fold (drawCell cell) board
 
-    let drawShip state ship =
-        let { Board = board; Points = points } = state
+    let getRandomData (points: Point list) =
         let index = randomNumber points.Length ()
         let direction = randomDirection ()
         let point = points.Item(index)
+        (point, direction)
 
+
+    let drawShip state ship =
+        let { Board = board; Points = points } = state
+        let (point, direction) = getRandomData points
         let shipPath = getShipPath ship direction point
         let boundsPath = getBoundsPath shipPath
 
