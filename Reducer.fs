@@ -13,7 +13,7 @@ module Reducers =
             let { Board = board; Points = points } = state
             let draw = drawShip state
 
-            printfn "From: %A" (render draw)
+            printfn "%A" (render draw)
             state
 
 
