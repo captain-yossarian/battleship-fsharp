@@ -1,35 +1,29 @@
 namespace Utils
 
-module HandleArray =
-    let splitArray a i = Array.take i a, Array.skip (i + 1) a
-
-
-    let removeByIndex (arr: 'a []) (index: int) =
-        let (head, tail) = splitArray arr index
-        Array.concat [| head; tail |]
-
-    let replaceByIndex (arr: 'a []) (index: int) (value: 'a) =
-        let (head, tail) = splitArray arr index
-        Array.concat [| head
-                        [| value |]
-                        tail |]
-
-module Board =
-    open HandleArray
+module Debug =
     open Types.GameTypes
-    open State.Constants
 
+    let convertToNum cell =
+        match cell with
+        | Some Initial -> 0
+        | Some Float -> 1
+        | Some Sinking -> 2
+        | Some Bounds -> 3
+        | None -> -1
+
+    let render (board: Board) =
+        Array2D.create 10 10 0
+        |> Array2D.mapi (fun rowi coli _ -> convertToNum (board.TryFind(Point(rowi, coli))))
+
+module Random =
+    open Types.GameTypes
 
     let random = System.Random()
 
-    let randomCell max () = random.Next(max)
-
-    let binaryRandom a b =
-        let random = random.Next(2)
-        if random = 1 then a else b
+    let randomNumber max () = random.Next(max)
 
     let randomDirection () =
-        let index = randomCell 4 ()
+        let index = randomNumber 4 ()
         match index with
         | 0 -> N
         | 1 -> E
@@ -37,74 +31,50 @@ module Board =
         | 3 -> W
         | _ -> W
 
-    let render (board: Board) =
-        let convertToNum cell =
-            match cell with
-            | Some Initial -> 0
-            | Some Float -> 1
-            | Some Sinking -> 2
-            | Some Bounds -> 3
-            | None -> -1
+module Board =
+    open Types.GameTypes
+    open State.Constants
+    open Random
 
-        Array2D.create 10 10 0
-        |> Array2D.mapi (fun rowi coli _ -> convertToNum (board.TryFind(Point(rowi, coli))))
+    let movePoint (point: Point) (shift: int * int) =
+        let (Point (row, column)) = point
+        let (rowShift, columnShift) = shift
+        Point(row + rowShift, column + columnShift)
 
+    let blueprintPath directions point shift =
+        let movePointBy = movePoint point
+        match directions with
+        | N -> movePointBy (-shift, 0)
+        | E -> movePointBy (0, shift)
+        | S -> movePointBy (shift, 0)
+        | W -> movePointBy (0, -shift)
+        | NE -> movePointBy (-shift, shift)
+        | SE -> movePointBy (shift, shift)
+        | SW -> movePointBy (shift, -shift)
+        | NW -> movePointBy (-shift, -shift)
 
-    let adjustBounds a shift =
-        let tmp = a + shift
-        if tmp < 0 || tmp > 9 then a else tmp
+    let getShipPath ship direction point =
+        let { Size = size } = ship
+        let bound = 1
+
+        let predicate =
+            fun index -> blueprintPath direction point (index + bound)
+
+        [ point ] @ List.init (size - bound) predicate
+
 
     let isInRange index = index >= 0 && index <= 9
 
     let isPointInRange (Point (row, column)) = isInRange row && isInRange column
 
-    let canUseDirection point direction ship =
-        let (Point (row, column)) = point
-        let { Size = size } = ship
-
-        match direction with
-        | N when (row - size) > 0 -> true
-        | S when (row + size) < 10 -> true
-        | W when (column - size) > 0 -> true
-        | E when (column + size) < 10 -> true
-        | _ -> false
-
-
-    let shiftPoint (point: Point) (shift: int * int) =
-        let (Point (row, column)) = point
-        let (rowShift, columnShift) = shift
-
-        Point(row + rowShift, column + columnShift)
-
-
-    let scanPath directions point shift =
-        let shifted = shiftPoint point
-        match directions with
-        | N -> shifted (-shift, 0)
-        | E -> shifted (0, shift)
-        | S -> shifted (shift, 0)
-        | W -> shifted (0, -shift)
-        | NE -> shifted (-shift, shift)
-        | SE -> shifted (shift, shift)
-        | SW -> shifted (shift, -shift)
-        | NW -> shifted (-shift, -shift)
-
-
-    let makeShipPath ship direction point =
-        let { Size = size } = ship
-        let bound = 1
-
-        let predicate =
-            fun index -> scanPath direction point (index + bound)
-
-        [ point ] @ List.init (size - bound) predicate
-
-
-    let generateBounds point =
+    let getCellBound point =
         WAYS
-        |> List.map (fun way -> scanPath way point 1)
+        |> List.map (fun way -> blueprintPath way point 1)
         |> List.filter isPointInRange
 
+    let getBoundsPath shipPath =
+        shipPath
+        |> List.fold (fun acc point -> acc @ getCellBound point) List.empty
 
     let isPointEmpty point (board: Board) = fst (board.TryGetValue(point))
 
@@ -113,35 +83,17 @@ module Board =
         path
         |> List.forall (fun elem -> isPointEmpty elem board)
 
+    let drawCell cell (board: Board) point = board.Add(point, cell)
 
-    let drawCell (board: Board) point cell = board.Add(point, cell)
+    let drawPath path board cell = path |> List.fold (drawCell cell) board
 
     let drawShip state ship =
         let { Board = board; Points = points } = state
-        let index = randomCell points.Length ()
+        let index = randomNumber points.Length ()
         let direction = randomDirection ()
         let point = points.Item(index)
 
+        let shipPath = getShipPath ship direction point
+        let boundsPath = getBoundsPath shipPath
 
-
-        let drawShipCore = makeShipPath ship direction point
-
-        let boundsPath =
-            drawShipCore
-            |> List.fold (fun acc elem -> acc @ generateBounds elem) List.empty
-
-        let ok = boundsPath |> isPathSuccessful board
-
-        printfn "Point %A, direction %A" point direction
-
-
-
-        let part1 =
-            boundsPath
-            |> List.fold (fun (board: Board) point -> board.Add(point, Bounds)) board
-
-        let part2 =
-            drawShipCore
-            |> List.fold (fun (board: Board) point -> board.Add(point, Float)) part1
-
-        part2
+        drawPath shipPath (drawPath boundsPath board Bounds) Float
