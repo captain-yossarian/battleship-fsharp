@@ -9,15 +9,28 @@ module Constants =
         Point(row, column)
 
     let ships =
-        [| { Count = 1y; Size = 4y }
-           { Count = 2y; Size = 3y }
-           { Count = 3y; Size = 2y }
-           { Count = 4y; Size = 1y } |]
+        [| { Count = 1; Size = 4 }
+           { Count = 2; Size = 3 }
+           { Count = 3; Size = 2 }
+           { Count = 4; Size = 1 } |]
 
-    let WAYS = [| N; E; S; W; NE; SE; SW; NW |]
+    let WAYS = [ N; E; S; W; NE; SE; SW; NW ]
 
-    let board: Board = Array.create 10 (Array.create 10 0)
+    let cellCount = 99
 
-    let points = [| 0 .. 99 |] |> Array.map toCoordinates
+    let cells = [ 0 .. cellCount ]
 
-    let initialState = { Points = points; Board = board }
+    let folder =
+        { Points = List.empty
+          Board = Map.empty }
+
+    let folderPredicate gameState cell =
+        let { Points = prevPoints; Board = prevBoard } = gameState
+        let coordinates = toCoordinates cell
+        let nextBoard = prevBoard.Add(coordinates, Initial)
+        let nextPoints = prevPoints @ [ coordinates ]
+        { Points = nextPoints
+          Board = nextBoard }
+
+    let initialState =
+        cells |> List.fold folderPredicate folder

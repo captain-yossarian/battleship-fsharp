@@ -1,11 +1,7 @@
 namespace Types
-
+//https://www.reddit.com/r/fsharp/comments/j3g2gn/please_review_my_code/
 module GameTypes =
-    type Ship = { Count: sbyte; Size: sbyte }
-
-    type Plane =
-        | Vertical
-        | Horizontal
+    type Ship = { Count: int; Size: int }
 
     type Cardinals =
         | N
@@ -24,15 +20,16 @@ module GameTypes =
         | NW
 
     type Cell =
-        | Initial = 0
-        | Float = 1
-        | Sinking = 2
-        | Empty = 3
+        | Initial
+        | Float
+        | Sinking
+        | Bounds
 
-    type Point = (int * int)
 
-    type Board = int [] []
+    type Point = Point of (int * int)
 
-    type GameState = { Points: Point []; Board: Board }
+    type Board = Map<Point, Cell>
+
+    type GameState = { Points: Point list; Board: Board }
 
     type Actions = BuildShips of Ship []

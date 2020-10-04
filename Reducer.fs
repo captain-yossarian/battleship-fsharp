@@ -7,10 +7,14 @@ module Reducers =
 
     let buildShips () = BuildShips ships
 
-    let reducer (action: Actions) (state: GameState) =
+    let reducer (action) (state) =
         match action with
         | BuildShips ships ->
             let { Board = board; Points = points } = state
-            let index = randomCell points.Length
-            let point = points.[index]
-            drawCell board point
+            let draw = drawShip state
+
+            printfn "%A" (render draw)
+            state
+
+
+// drawCell (drawCell board point) result
