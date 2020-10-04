@@ -2,12 +2,14 @@
 open State.Constants
 open Reducer.Reducers
 open Utils.Board
+open Utils.Debug
 
 [<EntryPoint>]
 let main argv =
-    let action = buildShips ()
-    let result = reducer action initialState
-    let rd = binaryRandom 1 2
+    let ship = {Count=1; Size=3}
+    let action = buildShips (ship)
+    let {Board=board} = reducer action initialState   
+    let result = render board
 
-    printfn "%A" rd
+    printfn "%A" result
     0 // return an integer exit code

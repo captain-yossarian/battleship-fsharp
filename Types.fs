@@ -25,11 +25,10 @@ module GameTypes =
         | Sinking
         | Bounds
 
-
     type Point = Point of (int * int)
 
     type Board = Map<Point, Cell>
 
     type GameState = { Points: Point list; Board: Board }
 
-    type Actions = BuildShips of Ship []
+    type Actions = BuildShip of Ship
