@@ -6,10 +6,10 @@ open Utils.Debug
 
 [<EntryPoint>]
 let main argv =
-    let action = buildShips ()
-    let result = reducer action initialState
     let ship = {Count=1; Size=3}
-    let r = render (drawShip initialState ship)
+    let action = buildShips (ship)
+    let {Board=board} = reducer action initialState   
+    let result = render board
 
-    printfn "%A" r
+    printfn "%A" result
     0 // return an integer exit code
