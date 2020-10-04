@@ -7,7 +7,8 @@ open Utils.Board
 let main argv =
     let action = buildShips ()
     let result = reducer action initialState
-    let rd = binaryRandom 1 2
+    let ship = {Count=1; Size=3}
+    let r = render (drawShip initialState ship)
 
-    printfn "%A" rd
+    printfn "%A" r
     0 // return an integer exit code

@@ -11,9 +11,7 @@ module Reducers =
         match action with
         | BuildShips ships ->
             let { Board = board; Points = points } = state
-            let draw = drawShip state
 
-            printfn "%A" (render draw)
             state
 
 

@@ -37,14 +37,6 @@ module Board =
         | 3 -> W
         | _ -> W
 
-    // let initialCoordinates board point =
-
-
-
-
-
-
-
     let render (board: Board) =
         let convertToNum cell =
             match cell with
@@ -57,10 +49,6 @@ module Board =
         Array2D.create 10 10 0
         |> Array2D.mapi (fun rowi coli _ -> convertToNum (board.TryFind(Point(rowi, coli))))
 
-
-    let goVertical (board: Board) (size: sbyte) = 1
-
-    let goHorizontal (board: Board) (size: sbyte) = 1
 
     let adjustBounds a shift =
         let tmp = a + shift
@@ -89,22 +77,34 @@ module Board =
         Point(row + rowShift, column + columnShift)
 
 
-    let scanPath directions point =
+    let scanPath directions point shift =
         let shifted = shiftPoint point
         match directions with
-        | N -> shifted (-1, 0)
-        | E -> shifted (0, 1)
-        | S -> shifted (1, 0)
-        | W -> shifted (0, -1)
-        | NE -> shifted (-1, 1)
-        | SE -> shifted (1, 1)
-        | SW -> shifted (1, -1)
-        | NW -> shifted (-1, -1)
+        | N -> shifted (-shift, 0)
+        | E -> shifted (0, shift)
+        | S -> shifted (shift, 0)
+        | W -> shifted (0, -shift)
+        | NE -> shifted (-shift, shift)
+        | SE -> shifted (shift, shift)
+        | SW -> shifted (shift, -shift)
+        | NW -> shifted (-shift, -shift)
 
-    let generatePath point =
+
+    let makeShipPath ship direction point =
+        let { Size = size } = ship
+        let bound = 1
+
+        let predicate =
+            fun index -> scanPath direction point (index + bound)
+
+        [ point ] @ List.init (size - bound) predicate
+
+
+    let generateBounds point =
         WAYS
-        |> List.map (fun way -> scanPath way point)
+        |> List.map (fun way -> scanPath way point 1)
         |> List.filter isPointInRange
+
 
     let isPointEmpty point (board: Board) = fst (board.TryGetValue(point))
 
@@ -114,19 +114,34 @@ module Board =
         |> List.forall (fun elem -> isPointEmpty elem board)
 
 
-    let drawCell (board: Board) point shipType = board.Add(point, shipType)
+    let drawCell (board: Board) point cell = board.Add(point, cell)
 
-    let drawShip state =
+    let drawShip state ship =
         let { Board = board; Points = points } = state
         let index = randomCell points.Length ()
         let direction = randomDirection ()
         let point = points.Item(index)
 
-        let path = generatePath point
-        let ok = path |> isPathSuccessful board
 
-        match ok with
-        | true ->
-            path
+
+        let drawShipCore = makeShipPath ship direction point
+
+        let boundsPath =
+            drawShipCore
+            |> List.fold (fun acc elem -> acc @ generateBounds elem) List.empty
+
+        let ok = boundsPath |> isPathSuccessful board
+
+        printfn "Point %A, direction %A" point direction
+
+
+
+        let part1 =
+            boundsPath
             |> List.fold (fun (board: Board) point -> board.Add(point, Bounds)) board
-        | false -> board
+
+        let part2 =
+            drawShipCore
+            |> List.fold (fun (board: Board) point -> board.Add(point, Float)) part1
+
+        part2
