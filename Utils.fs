@@ -85,7 +85,7 @@ module Board =
 
     let drawCell cell (board: Board) point = board.Add(point, cell)
 
-    let drawPath path board cell = path |> List.fold (drawCell cell) board
+    let drawPath path cell board = path |> List.fold (drawCell cell) board
 
     let getRandomData (points: Point list) =
         let index = randomNumber points.Length ()
@@ -93,11 +93,12 @@ module Board =
         let point = points.Item(index)
         (point, direction)
 
-
     let drawShip state ship =
         let { Board = board; Points = points } = state
         let (point, direction) = getRandomData points
         let shipPath = getShipPath ship direction point
         let boundsPath = getBoundsPath shipPath
 
-        drawPath shipPath (drawPath boundsPath board Bounds) Float
+        board
+        |> drawPath boundsPath Bounds
+        |> drawPath shipPath Float

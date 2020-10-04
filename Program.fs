@@ -8,7 +8,7 @@ open Utils.Debug
 let main argv =
     let action = buildShips ()
     let result = reducer action initialState
-    let ship = {Count=1; Size=1}
+    let ship = {Count=1; Size=3}
     let r = render (drawShip initialState ship)
 
     printfn "%A" r
