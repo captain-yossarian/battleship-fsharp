@@ -23,7 +23,7 @@ module GameTypes =
         | Initial
         | Float
         | Sinking
-        | Empty
+        | Bounds
 
 
     type Point = Point of (int * int)

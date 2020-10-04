@@ -11,10 +11,10 @@ module Reducers =
         match action with
         | BuildShips ships ->
             let { Board = board; Points = points } = state
-            let index = randomCell points.Length ()
-            let direction = randomDirection ()
-            let point = points.Item(index)
-            let result = scan board point direction
-            printfn "From: %A, to: %A, direction: %A" point result direction
+            let draw = drawShip state
 
-            drawCell (drawCell board point) result
+            printfn "From: %A" (render draw)
+            state
+
+
+// drawCell (drawCell board point) result

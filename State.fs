@@ -14,7 +14,7 @@ module Constants =
            { Count = 3; Size = 2 }
            { Count = 4; Size = 1 } |]
 
-    let WAYS = [| N; E; S; W; NE; SE; SW; NW |]
+    let WAYS = [ N; E; S; W; NE; SE; SW; NW ]
 
     let cellCount = 99
 
