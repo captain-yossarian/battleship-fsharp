@@ -15,9 +15,10 @@ module Constants =
            { Count = 4y; Size = 1y } |]
 
     let WAYS = [| N; E; S; W; NE; SE; SW; NW |]
-    // List.fold (fun x y -> x + y) 0 [1; 2; 3] // val it : int = 6
 
-    let cells = [ 0 .. 99 ]
+    let cellCount = 99
+
+    let cells = [ 0 .. cellCount ]
 
     let folder =
         { Points = List.empty

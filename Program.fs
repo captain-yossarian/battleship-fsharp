@@ -7,5 +7,6 @@ open Utils.Board
 let main argv =
     let action = buildShips ()
     let result = reducer action initialState
-    printfn "hello %A" 2
+
+    printfn "%A" (render result)
     0 // return an integer exit code

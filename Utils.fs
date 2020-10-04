@@ -19,6 +19,7 @@ module Board =
     open Types.GameTypes
     open State.Constants
 
+
     let random = System.Random()
 
     let randomCell max () = random.Next(max)
@@ -30,12 +31,27 @@ module Board =
 
     let drawCell (board: Board) (point: Point) =
         let (Point (row, column)) = point
-        board
+        board.Add(point, Sinking)
+
+    let render (board: Board) =
+        let convertToNum cell =
+            match cell with
+            | Some Initial -> 0
+            | Some Float -> 1
+            | Some Sinking -> 2
+            | Some Empty -> 3
+            | None -> -1
+
+        Array2D.create 10 10 0
+        |> Array2D.mapi (fun rowi coli _ -> convertToNum (board.TryFind(Point(rowi, coli))))
+
 
 
 // let copied = Array.copy board.[row]
 
-//  replaceByIndex board row (replaceByIndex copied column 1)
+// replaceByIndex board row (replaceByIndex copied column 1)
+
+
 
 // let goVertical (board: Board) (size: sbyte) = 1
 // let goHorizontal (board: Board) (size: sbyte) = 1
@@ -82,7 +98,3 @@ module Board =
 //     match direction with
 //     | Vertical -> goVertical
 //     | Horizontal -> goHorizontal
-
-// let render (board: Board) =
-//     for KeyValue (key, value) in board do
-//         printfn "Hello %A, %A" key value
