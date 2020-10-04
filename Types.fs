@@ -31,7 +31,7 @@ module GameTypes =
 
     type Point = Point of (int * int)
 
-    type Board = int [] []
+    type Board = Map<Point, Cell>
 
     type GameState = { Points: Point list; Board: Board }
 

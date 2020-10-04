@@ -15,9 +15,21 @@ module Constants =
            { Count = 4y; Size = 1y } |]
 
     let WAYS = [| N; E; S; W; NE; SE; SW; NW |]
+    // List.fold (fun x y -> x + y) 0 [1; 2; 3] // val it : int = 6
 
-    let board: Board = Array.create 10 (Array.create 10 0)
+    let cells = [ 0 .. 99 ]
 
-    let points = [| 0 .. 99 |] |> Array.map toCoordinates
+    let folder =
+        { Points = List.empty
+          Board = Map.empty }
 
-    let initialState = { Points = points; Board = board }
+    let folderPredicate gameState cell =
+        let { Points = prevPoints; Board = prevBoard } = gameState
+        let coordinates = toCoordinates cell
+        let nextBoard = prevBoard.Add(coordinates, Initial)
+        let nextPoints = prevPoints @ [ coordinates ]
+        { Points = nextPoints
+          Board = nextBoard }
+
+    let initialState =
+        cells |> List.fold folderPredicate folder
