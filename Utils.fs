@@ -24,9 +24,25 @@ module Board =
 
     let randomCell max () = random.Next(max)
 
+    let binaryRandom a b =
+        let random = random.Next(2)
+        if random = 1 then a else b
+
     let randomDirection () =
-        let index = randomCell 1 ()
-        if index = 0 then Vertical else Horizontal
+        let index = randomCell 4 ()
+        match index with
+        | 0 -> N
+        | 1 -> E
+        | 2 -> S
+        | 3 -> W
+        | _ -> W
+
+    // let initialCoordinates board point =
+
+
+    // let drawShip ship =
+    //     match ships with
+    //     | {Count = count; Size=size } ->
 
 
     let drawCell (board: Board) (point: Point) =
@@ -46,55 +62,42 @@ module Board =
         |> Array2D.mapi (fun rowi coli _ -> convertToNum (board.TryFind(Point(rowi, coli))))
 
 
+    let goVertical (board: Board) (size: sbyte) = 1
 
-// let copied = Array.copy board.[row]
+    let goHorizontal (board: Board) (size: sbyte) = 1
 
-// replaceByIndex board row (replaceByIndex copied column 1)
-
-
-
-// let goVertical (board: Board) (size: sbyte) = 1
-// let goHorizontal (board: Board) (size: sbyte) = 1
-
-// let isEmpty (board: Board) (point: Point) =
-//     let (row, column) = point
-//     board.[row].[column] = 0
-
-// let adjustBounds a shift =
-//     let tmp = a + shift
-//     if tmp < 0 || tmp > 9 then a else tmp
-
-// let shiftPoint (point: Point) (shift: int * int) =
-//     let (row, column) = point
-//     let (rowShift, columnShift) = shift
-
-//     Point(adjustBounds row rowShift, adjustBounds column columnShift)
+    let adjustBounds a shift =
+        let tmp = a + shift
+        if tmp < 0 || tmp > 9 then a else tmp
 
 
-// let scan (board: Board) (point: Point) (ship: Ship) =
-//     let { Size = size } = ship
-
-//     let shifted = shiftPoint point
-
-//     let callback side =
-//         match side with
-//         | N -> shifted (-1, 0)
-//         | E -> shifted (0, 1)
-//         | S -> shifted (1, 0)
-//         | W -> shifted (0, -1)
-//         | NE -> shifted (-1, 1)
-//         | SE -> shifted (1, 1)
-//         | SW -> shifted (1, -1)
-//         | NW -> shifted (-1, 1)
-
-//     WAYS
-//     |> Array.map callback
-//     |> Array.forall (fun pnt -> isEmpty board pnt)
+    let canApplyShip point direction ship =
+        let (Point (row, column)) = point
+        let { Size = size } = ship
+        match direction with
+        | N when (row - size) > 0 -> true
+        | S when (row + size) < 10 -> true
+        | W when (column - size) > 0 -> true
+        | E when (column + size) < 10 -> true
+        | _ -> false
 
 
-// let makePath (board: Board) (point: Point) (ship: Ship) =
-//     let direction = randomDirection ()
-//     let { Size = size } = ship
-//     match direction with
-//     | Vertical -> goVertical
-//     | Horizontal -> goHorizontal
+
+    let shiftPoint (point: Point) (shift: int * int) =
+        let (Point (row, column)) = point
+        let (rowShift, columnShift) = shift
+
+        Point(adjustBounds row rowShift, adjustBounds column columnShift)
+
+
+    let scan (board: Board) (point: Point) directions =
+        let shifted = shiftPoint point
+        match directions with
+        | N -> shifted (-1, 0)
+        | E -> shifted (0, 1)
+        | S -> shifted (1, 0)
+        | W -> shifted (0, -1)
+        | NE -> shifted (-1, 1)
+        | SE -> shifted (1, 1)
+        | SW -> shifted (1, -1)
+        | NW -> shifted (-1, 1)

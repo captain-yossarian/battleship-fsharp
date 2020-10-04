@@ -9,10 +9,10 @@ module Constants =
         Point(row, column)
 
     let ships =
-        [| { Count = 1y; Size = 4y }
-           { Count = 2y; Size = 3y }
-           { Count = 3y; Size = 2y }
-           { Count = 4y; Size = 1y } |]
+        [| { Count = 1; Size = 4 }
+           { Count = 2; Size = 3 }
+           { Count = 3; Size = 2 }
+           { Count = 4; Size = 1 } |]
 
     let WAYS = [| N; E; S; W; NE; SE; SW; NW |]
 

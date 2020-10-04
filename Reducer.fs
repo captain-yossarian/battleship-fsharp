@@ -12,5 +12,9 @@ module Reducers =
         | BuildShips ships ->
             let { Board = board; Points = points } = state
             let index = randomCell points.Length ()
+            let direction = randomDirection ()
             let point = points.Item(index)
-            drawCell board point
+            let result = scan board point direction
+            printfn "From: %A, to: %A, direction: %A" point result direction
+
+            drawCell (drawCell board point) result
