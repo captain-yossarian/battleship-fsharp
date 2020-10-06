@@ -13,7 +13,8 @@ module Debug =
 
     let render (board: Board) =
         Array2D.create 10 10 0
-        |> Array2D.mapi (fun rowi coli _ -> convertToNum (board.TryFind(Point(rowi, coli))))
+        |> Array2D.mapi (fun rowi coli _ -> Point(rowi, coli) |> board.TryFind |> convertToNum)
+
 
 module Random =
     open Types.GameTypes
@@ -36,9 +37,7 @@ module Board =
     open State.Constants
     open Random
 
-    let movePoint (point: Point) (shift: int * int) =
-        let (Point (row, column)) = point
-        let (rowShift, columnShift) = shift
+    let movePoint (Point (row, column): Point) ((rowShift, columnShift): int * int) =
         Point(row + rowShift, column + columnShift)
 
     let movePointByIndex directions point shift =
@@ -60,18 +59,22 @@ module Board =
         let predicate =
             fun index -> movePointByIndex direction point (index + bound)
 
-        [ point ] @ List.init (size - bound) predicate
+        point :: List.init (size - bound) predicate
 
-    let isInRange index = index >= 0 && index <= 9
+    let lowestBound = 0
+    let highestBound = 9
+
+    let isInRange index =
+        index >= lowestBound && index <= highestBound
 
     let isPointInRange (Point (row, column)) = isInRange row && isInRange column
 
     let getCellBound point =
         WAYS
-        |> List.fold (fun acc way ->
+        |> List.choose (fun way ->
             match isPointInRange point with
-            | true -> acc @ [ movePointByIndex way point 1 ]
-            | false -> acc) List.empty
+            | true -> Some(movePointByIndex way point 1)
+            | false -> None)
 
     let getBoundsPath shipPath =
         shipPath
