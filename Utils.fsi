@@ -12,4 +12,5 @@ module Debug =
 module Board =
     open Types.GameTypes
 
-    val drawShip: GameState -> Ship -> Board
+    val drawPath: path:Point list -> cell:Cell -> board:Board -> Board
+    val drawShip: state:GameState -> ship:Ship -> Board

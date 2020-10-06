@@ -29,6 +29,6 @@ module GameTypes =
 
     type Board = Map<Point, Cell>
 
-    type GameState = { Points: Point list; Board: Board }
+    type GameState = { Board: Board }
 
     type Actions = BuildShip of Ship

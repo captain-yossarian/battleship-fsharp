@@ -54,17 +54,16 @@ module Board =
 
     let getShipPath ship direction point =
         let { Size = size } = ship
-        let bound = 1
+        let step = 1
 
         let predicate =
-            fun index -> movePointByIndex direction point (index + bound)
+            fun index -> movePointByIndex direction point (index + step)
 
-        point :: List.init (size - bound) predicate
-
-    let lowestBound = 0
-    let highestBound = 9
+        point :: List.init (size - step) predicate
 
     let isInRange index =
+        let lowestBound = 0
+        let highestBound = 9
         index >= lowestBound && index <= highestBound
 
     let isPointInRange (Point (row, column)) = isInRange row && isInRange column
@@ -80,9 +79,12 @@ module Board =
         shipPath
         |> List.fold (fun acc point -> acc @ getCellBound point) List.empty
 
-    let isCellEmpty point (board: Board) = fst (board.TryGetValue(point))
+    let isCellEmpty point (board: Board) =
+        match board.TryGetValue(point) with
+        | (true, Initial) -> true
+        | _ -> false
 
-    let isPathSuccessful board path =
+    let isPathSuccessful path board =
         path
         |> List.forall (fun elem -> isCellEmpty elem board)
 
@@ -96,11 +98,44 @@ module Board =
         let point = points.Item(index)
         (point, direction)
 
-    let drawShip state ship =
-        let { Board = board; Points = points } = state
-        let (point, direction) = getRandomData points
+    let getEmptyPoints board =
+        board
+        |> Map.fold (fun acc key value ->
+            match value with
+            | Initial -> key :: acc
+            | _ -> acc) List.empty
+
+    let isEqualPoints (Point (rowx, columnx)) (Point (rowy, columny)) = rowx = rowy && columnx = columny
+
+    let rec approvePath board ship emptyPoints =
+        let (point, direction) = getRandomData emptyPoints
         let shipPath = getShipPath ship direction point
         let boundsPath = getBoundsPath shipPath
+        let part1 = isPathSuccessful shipPath board
+        let part2 = isPathSuccessful boundsPath board
+
+        printfn "Result %A" emptyPoints.Length
+
+        match (part1, part2) with
+        | (true, true) -> (shipPath, boundsPath)
+        | _ ->
+            approvePath
+                board
+                ship
+                (emptyPoints
+                 |> List.filter (fun emptyPoint -> not (isEqualPoints emptyPoint point)))
+
+    let drawShip state ship =
+        let { Board = board } = state
+        // let (point, direction) = getRandomData (getEmptyPoints board)
+        let filteredPoints = getEmptyPoints board
+        printfn "Points %A" filteredPoints.Length
+
+
+        let (shipPath, boundsPath) = approvePath board ship filteredPoints
+
+        // let shipPath = getShipPath ship direction point
+        // let boundsPath = getBoundsPath shipPath
 
         board
         |> drawPath boundsPath Bounds
