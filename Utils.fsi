@@ -8,8 +8,10 @@ module Debug =
     open Types.GameTypes
 
     val render: Board -> int [,]
+    val success: board:Map<'a, Cell> -> bool
 
 module Board =
     open Types.GameTypes
 
-    val drawShip: GameState -> Ship -> Board
+    val drawPath: path:Point list -> cell:Cell -> board:Board -> Board
+    val drawShip: state:GameState -> ship:Ship -> Board

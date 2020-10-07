@@ -20,17 +20,11 @@ module Constants =
 
     let cells = [ 0 .. cellCount ]
 
-    let folder =
-        { Points = List.empty
-          Board = Map.empty }
-
-    let folderPredicate gameState cell =
-        let { Points = prevPoints; Board = prevBoard } = gameState
+    let predicate gameState cell =
+        let { Board = prevBoard } = gameState
         let coordinates = toCoordinates cell
         let nextBoard = prevBoard.Add(coordinates, Initial)
-        let nextPoints = prevPoints @ [ coordinates ]
-        { Points = nextPoints
-          Board = nextBoard }
+        { Board = nextBoard }
 
     let initialState =
-        cells |> List.fold folderPredicate folder
+        cells |> List.fold predicate { Board = Map.empty }

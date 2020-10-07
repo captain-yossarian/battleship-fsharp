@@ -4,10 +4,10 @@ module Reducers =
     open Types.GameTypes
     open Utils.Board
 
-    let buildShips (ship) = BuildShip ship
+    let buildShip (ship) = MakeShip ship
 
     let reducer (action) (state) =
         match action with
-        | BuildShip ship ->
+        | MakeShip ship ->
             { state with
                   Board = drawShip state ship }
