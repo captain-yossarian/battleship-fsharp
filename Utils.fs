@@ -125,8 +125,12 @@ module Board =
 
     let removePoint points point =
         points |> List.filter (fun pnt -> pnt <> point)
+    // because of infinity recursion
+    // @TODO add cache mechanism with bit mask of used directions
 
-    let rec approvePath board ship emptyPoints =
+    let rec approvePath board ship =
+        let emptyPoints = getEmptyPoints board
+
         let (point, direction) = getRandomData emptyPoints
         let shipPath = getShipPath ship direction point
         let boundsPath = getBoundsPath shipPath
@@ -136,13 +140,12 @@ module Board =
 
         match (shipPathApprove, boundsPathApprove) with
         | (true, true) -> (shipPath, boundsPath)
-        | _ -> approvePath board ship (removePoint emptyPoints point)
+        | _ -> approvePath board ship
 
     let drawShip state ship =
         let { Board = board } = state
         // let (point, direction) = getRandomData (getEmptyPoints board)
-        let emptyPoints = getEmptyPoints board
-        let (shipPath, boundsPath) = approvePath board ship emptyPoints
+        let (shipPath, boundsPath) = approvePath board ship
         board
         |> drawPath boundsPath Bounds
         |> drawPath shipPath Float
