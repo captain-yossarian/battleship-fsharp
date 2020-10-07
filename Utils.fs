@@ -79,14 +79,17 @@ module Board =
         shipPath
         |> List.fold (fun acc point -> acc @ getCellBound point) List.empty
 
-    let isCellEmpty point (board: Board) =
-        match board.TryGetValue(point) with
-        | (true, Initial) -> true
+    let allowToDraw point (board: Board) cell =
+        let value = board.TryGetValue(point)
+        match (cell, value) with
+        | (Float, (true, Initial)) -> true
+        | (Bounds, (true, Initial))
+        | (Bounds, (true, Bounds)) -> true
         | _ -> false
 
-    let isPathSuccessful path board =
+    let canBuildPath path cell board =
         path
-        |> List.forall (fun elem -> isCellEmpty elem board)
+        |> List.forall (fun elem -> allowToDraw elem board cell)
 
     let drawCell cell (board: Board) point = board.Add(point, cell)
 
@@ -107,36 +110,26 @@ module Board =
 
     let isEqualPoints (Point (rowx, columnx)) (Point (rowy, columny)) = rowx = rowy && columnx = columny
 
+    let removePoint points point =
+        points |> List.filter (fun pnt -> pnt <> point)
+
     let rec approvePath board ship emptyPoints =
         let (point, direction) = getRandomData emptyPoints
         let shipPath = getShipPath ship direction point
         let boundsPath = getBoundsPath shipPath
-        let part1 = isPathSuccessful shipPath board
-        let part2 = isPathSuccessful boundsPath board
 
-        printfn "Result %A" emptyPoints.Length
+        let shipPathApprove = canBuildPath shipPath Float board
+        let boundsPathApprove = canBuildPath boundsPath Bounds board
 
-        match (part1, part2) with
+        match (shipPathApprove, boundsPathApprove) with
         | (true, true) -> (shipPath, boundsPath)
-        | _ ->
-            approvePath
-                board
-                ship
-                (emptyPoints
-                 |> List.filter (fun emptyPoint -> not (isEqualPoints emptyPoint point)))
+        | _ -> approvePath board ship (removePoint emptyPoints point)
 
     let drawShip state ship =
         let { Board = board } = state
         // let (point, direction) = getRandomData (getEmptyPoints board)
-        let filteredPoints = getEmptyPoints board
-        printfn "Points %A" filteredPoints.Length
-
-
-        let (shipPath, boundsPath) = approvePath board ship filteredPoints
-
-        // let shipPath = getShipPath ship direction point
-        // let boundsPath = getBoundsPath shipPath
-
+        let emptyPoints = getEmptyPoints board
+        let (shipPath, boundsPath) = approvePath board ship emptyPoints
         board
         |> drawPath boundsPath Bounds
         |> drawPath shipPath Float

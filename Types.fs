@@ -31,4 +31,4 @@ module GameTypes =
 
     type GameState = { Board: Board }
 
-    type Actions = BuildShip of Ship
+    type Actions = MakeShip of Ship

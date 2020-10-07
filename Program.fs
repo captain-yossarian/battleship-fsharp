@@ -5,16 +5,19 @@ open Utils.Board
 open Utils.Debug
 
 [<EntryPoint>]
-let main argv =
-    let ship = {Count=1; Size=3}
-    let action = buildShips (ship)
-    let state = reducer action initialState   
+let main argv = 
+    let ships =
+         [| { Count = 1; Size = 4 }
+            { Count = 2; Size = 3 }
+            { Count = 3; Size = 2 }
+            { Count = 4; Size = 1 } |]   
 
+    let dispatchShip state ship =
+        reducer (buildShip ship) state
 
-    let sndAction = buildShips {Count=1; Size=2}
-
-    let {Board=board} = reducer sndAction state   
+    let buildAllShips = ships |> Array.fold dispatchShip initialState 
+    let {Board=board} = buildAllShips
     let result = render board
 
-    printfn "%A" result 
+    printfn "%A" result
     0 // return an integer exit code
