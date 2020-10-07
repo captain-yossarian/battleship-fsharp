@@ -8,6 +8,7 @@ module Debug =
     open Types.GameTypes
 
     val render: Board -> int [,]
+    val success: board:Map<'a, Cell> -> bool
 
 module Board =
     open Types.GameTypes

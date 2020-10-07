@@ -15,6 +15,15 @@ module Debug =
         Array2D.create 10 10 0
         |> Array2D.mapi (fun rowi coli _ -> Point(rowi, coli) |> board.TryFind |> convertToNum)
 
+    let summary board =
+        board
+        |> Map.fold (fun acc _ value ->
+            match value with
+            | Float -> acc + 1
+            | _ -> acc) 0
+
+    let success board = (summary board) = 20
+
 
 module Random =
     open Types.GameTypes
@@ -97,8 +106,12 @@ module Board =
 
     let getRandomData (points: Point list) =
         let index = randomNumber points.Length ()
+        printfn "POINT INDEX %A" index
         let direction = randomDirection ()
         let point = points.Item(index)
+        printfn "POINT ITSELF %A" points.Length
+
+
         (point, direction)
 
     let getEmptyPoints board =
