@@ -62,7 +62,7 @@ module Board =
         | SW -> movePointBy (shift, -shift)
         | NW -> movePointBy (-shift, -shift)
 
-    let getShipPath ship direction point =
+    let makeShipPath ship direction point =
         let { Size = size } = ship
         let step = 1
 
@@ -106,7 +106,7 @@ module Board =
 
     let drawPath path cell board = path |> List.fold (drawCell cell) board
 
-    let getRandomData (points: Point list) =
+    let getRandomElement (points: Point list) =
         let index = randomNumber points.Length ()
         let point = points.Item(index)
         point
@@ -124,38 +124,43 @@ module Board =
     let removePoint points point =
         points |> List.filter (fun pnt -> pnt <> point)
 
-    let rec chooseDirection ship (point: Point) (board: Board) (directions: Directions list) =
+    let rec getShipPath ship (point: Point) (board: Board) (directions: Directions list) =
         match directions with
-        | [ x ] -> getShipPath ship x point
+        | [ x ] -> makeShipPath ship x point
         | x :: xs ->
-            let path = getShipPath ship x point
+            let path = makeShipPath ship x point
 
             match canBuildPath path Float board with
             | true -> path
-            | false -> chooseDirection ship point board xs
-        | [] -> getShipPath ship N point
+            | false -> getShipPath ship point board xs
+        | [] -> makeShipPath ship N point
 
-    let rec approvePath board ship =
-        let emptyPoints = getEmptyPoints board
+    let getWholePath board ship =
+        let point =
+            (getEmptyPoints >> getRandomElement) board
 
-        let point = getRandomData emptyPoints
-
-        let shipPath =
-            chooseDirection ship point board WAYS.[..3]
-
+        let shipPath = getShipPath ship point board WAYS.[..3]
         let boundsPath = getBoundsPath shipPath
 
+        (shipPath, boundsPath)
+
+    let canProceed (shipPath, boundsPath) board =
         let shipPathApprove = canBuildPath shipPath Float board
         let boundsPathApprove = canBuildPath boundsPath Bounds board
-        match (shipPathApprove, boundsPathApprove) with
-        | (true, true) -> (shipPath, boundsPath)
-        | _ -> approvePath board ship
+        (shipPathApprove, boundsPathApprove)
+
+
+    let rec approvedPath board ship =
+        let wholePath = getWholePath board ship
+        let wholePathApprove = canProceed wholePath board
+
+        match wholePathApprove with
+        | (true, true) -> wholePath
+        | _ -> approvedPath board ship
 
     let drawShip state ship =
         let { Board = board } = state
-
-        // let (point, direction) = getRandomData (getEmptyPoints board)
-        let (shipPath, boundsPath) = approvePath board ship
+        let (shipPath, boundsPath) = approvedPath board ship
 
         board
         |> drawPath boundsPath Bounds
