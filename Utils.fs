@@ -124,7 +124,10 @@ module Board =
     let removePoint points point =
         points |> List.filter (fun pnt -> pnt <> point)
 
-    let rec getShipPath ship (point: Point) (board: Board) (directions: Directions list) =
+    let rec getShipPath ship (board: Board) (directions: Directions list) =
+        let point =
+            (getEmptyPoints >> getRandomElement) board
+
         match directions with
         | [ x ] -> makeShipPath ship x point
         | x :: xs ->
@@ -132,14 +135,11 @@ module Board =
 
             match canBuildPath path Float board with
             | true -> path
-            | false -> getShipPath ship point board xs
+            | false -> getShipPath ship board xs
         | [] -> makeShipPath ship N point
 
     let getWholePath board ship =
-        let point =
-            (getEmptyPoints >> getRandomElement) board
-
-        let shipPath = getShipPath ship point board WAYS.[..3]
+        let shipPath = getShipPath ship board WAYS.[..3]
         let boundsPath = getBoundsPath shipPath
 
         (shipPath, boundsPath)
@@ -149,12 +149,10 @@ module Board =
         let boundsPathApprove = canBuildPath boundsPath Bounds board
         (shipPathApprove, boundsPathApprove)
 
-
     let rec approvedPath board ship =
         let wholePath = getWholePath board ship
-        let wholePathApprove = canProceed wholePath board
 
-        match wholePathApprove with
+        match canProceed wholePath board with
         | (true, true) -> wholePath
         | _ -> approvedPath board ship
 
