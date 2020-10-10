@@ -62,7 +62,7 @@ module Board =
         | SW -> movePointBy (shift, -shift)
         | NW -> movePointBy (-shift, -shift)
 
-    let makeShipPath ship direction point =
+    let makeShipPath ship point direction =
         let { Size = size } = ship
         let step = 1
 
@@ -124,22 +124,28 @@ module Board =
     let removePoint points point =
         points |> List.filter (fun pnt -> pnt <> point)
 
-    let rec getShipPath ship (board: Board) (directions: Directions list) =
-        let point =
-            (getEmptyPoints >> getRandomElement) board
+    let availablePoint board =
+        (getEmptyPoints >> getRandomElement) board
 
-        match directions with
-        | [ x ] -> makeShipPath ship x point
-        | x :: xs ->
-            let path = makeShipPath ship x point
 
-            match canBuildPath path Float board with
-            | true -> path
-            | false -> getShipPath ship board xs
-        | [] -> makeShipPath ship N point
+    let rec getShipPath ship (board: Board) =
+        let directions = WAYS.[..3]
+
+        let rec allowed point =
+            let applyDirection = makeShipPath ship point
+
+            let way =
+                List.tryFind (fun direction -> canBuildPath (applyDirection direction) Float board) directions
+
+            match way with
+            | (Some direction) -> applyDirection direction
+            | None -> allowed (getRandomElement (removePoint (getEmptyPoints board) point))
+
+        allowed (availablePoint board)
+
 
     let getWholePath board ship =
-        let shipPath = getShipPath ship board WAYS.[..3]
+        let shipPath = getShipPath ship board
         let boundsPath = getBoundsPath shipPath
 
         (shipPath, boundsPath)
