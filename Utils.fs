@@ -127,40 +127,30 @@ module Board =
     let availablePoint board =
         (getEmptyPoints >> getRandomElement) board
 
-
-    let rec getShipPath ship (board: Board) =
+    let getShipPath ship (board: Board) =
         let directions = WAYS.[..3]
+        let handleRemove point = removePoint (getEmptyPoints board) point
 
         let rec allowed point =
             let applyDirection = makeShipPath ship point
 
-            let way =
+            let chosenDirection =
                 List.tryFind (fun direction -> canBuildPath (applyDirection direction) Float board) directions
 
-            match way with
+            match chosenDirection with
             | (Some direction) -> applyDirection direction
-            | None -> allowed (getRandomElement (removePoint (getEmptyPoints board) point))
+            | None -> (handleRemove >> getRandomElement >> allowed) point
 
         allowed (availablePoint board)
 
-
-    let getWholePath board ship =
+    let rec approvedPath board ship =
         let shipPath = getShipPath ship board
         let boundsPath = getBoundsPath shipPath
+        let canProceed = canBuildPath boundsPath Bounds board
 
-        (shipPath, boundsPath)
-
-    let canProceed (shipPath, boundsPath) board =
-        let shipPathApprove = canBuildPath shipPath Float board
-        let boundsPathApprove = canBuildPath boundsPath Bounds board
-        (shipPathApprove, boundsPathApprove)
-
-    let rec approvedPath board ship =
-        let wholePath = getWholePath board ship
-
-        match canProceed wholePath board with
-        | (true, true) -> wholePath
-        | _ -> approvedPath board ship
+        match canProceed with
+        | true -> (shipPath, boundsPath)
+        | false -> approvedPath board ship
 
     let drawShip state ship =
         let { Board = board } = state
