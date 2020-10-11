@@ -45,7 +45,6 @@ module Board =
     open Types.GameTypes
     open State.Constants
     open Random
-    open Debug
 
     let movePoint (Point (row, column): Point) ((rowShift, columnShift): int * int) =
         Point(row + rowShift, column + columnShift)
