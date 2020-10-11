@@ -6,7 +6,6 @@
   <ItemGroup>
     <Compile Include="Types.fs" />
     <Compile Include="State.fs" />
-    <Compile Include="Utils.fsi" />
     <Compile Include="Utils.fs" />
     <Compile Include="Reducer.fs" />
     <Compile Include="Tests.fs" />
