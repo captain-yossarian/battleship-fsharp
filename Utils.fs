@@ -126,9 +126,10 @@ module Board =
     let availablePoint board =
         (getEmptyPoints >> getRandomElement) board
 
+
     let getShipPath ship (board: Board) =
         let directions = WAYS.[..3]
-        let handleRemove point = removePoint (getEmptyPoints board) point
+        let remove point = removePoint (getEmptyPoints board) point
 
         let rec allowed point =
             let applyDirection = makeShipPath ship point
@@ -138,7 +139,7 @@ module Board =
 
             match chosenDirection with
             | (Some direction) -> applyDirection direction
-            | None -> (handleRemove >> getRandomElement >> allowed) point
+            | None -> (remove >> getRandomElement >> allowed) point
 
         allowed (availablePoint board)
 

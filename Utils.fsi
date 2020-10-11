@@ -14,4 +14,5 @@ module Board =
     open Types.GameTypes
 
     val drawPath: path:Point list -> cell:Cell -> board:Board -> Board
+    val movePoint: Point -> int * int -> Point
     val drawShip: state:GameState -> ship:Ship -> Board
