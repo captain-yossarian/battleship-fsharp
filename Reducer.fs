@@ -8,6 +8,7 @@ module Reducers =
 
     let reducer (action) (state) =
         match action with
-        | MakeShip ship ->
+        | MakeShip { Size = size } ->
+            let { Board = board } = state
             { state with
-                  Board = drawShip state ship }
+                  Board = drawShip size board }
