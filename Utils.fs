@@ -151,13 +151,12 @@ module Board =
         let canProceed = canBuildPath boundsPath Bounds board
 
         match canProceed with
-        | true -> (shipPath, boundsPath)
+        | true -> ((shipPath, boundsPath), board)
         | false -> approvedPath shipSize board
 
-    let drawByPath (shipPath, boundsPath) board =
+    let drawByPath ((shipPath, boundsPath), board) =
         board
         |> drawPath boundsPath Bounds
         |> drawPath shipPath Float
 
-    let drawShip shipSize board =
-        drawByPath (approvedPath shipSize board) board
+    let drawShip shipSize = approvedPath shipSize >> drawByPath
