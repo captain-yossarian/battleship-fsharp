@@ -64,7 +64,7 @@ module Board =
 
     let makeShipPath shipSize point direction =
         point
-        :: List.init (shipSize - 1) (fun index -> movePointByIndex direction point index)
+        :: List.init (shipSize - 1) (fun index -> (movePointByIndex direction (fst point) index, Float))
 
     let isInRange index =
         let lowestBound = 0
@@ -77,12 +77,12 @@ module Board =
         WAYS
         |> List.choose (fun way ->
             match isPointInRange point with
-            | true -> Some(movePointByIndex way point 0)
+            | true -> Some(((movePointByIndex way point 0), Bounds))
             | false -> None)
 
-    let getBoundsPath shipPath =
+    let getBoundsPath (shipPath: (Point * Cell) list) =
         shipPath
-        |> List.fold (fun acc point -> acc @ getCellBound point) List.empty
+        |> List.fold (fun acc (point, _) -> acc @ getCellBound point) List.empty
 
     let allowToDraw point (board: Board) cell =
         let value = board.TryGetValue(point)
@@ -93,13 +93,15 @@ module Board =
         | (Bounds, _) -> true
         | _ -> false
 
-    let canBuildPath path cell board =
+    let canBuildPath path board =
         path
-        |> List.forall (fun elem -> allowToDraw elem board cell)
+        |> List.forall (fun (elem, cell) -> allowToDraw elem board cell)
 
     let drawCell cell (board: Board) point = board.Add(point, cell)
 
-    let drawPath path cell board = path |> List.fold (drawCell cell) board
+    let drawPath path board =
+        path
+        |> List.fold (fun acc (point, cell) -> drawCell cell acc point) board
 
     let getRandomElement (points: Point list) =
         let index = randomNumber points.Length ()
@@ -124,13 +126,14 @@ module Board =
 
 
     let chooseDirection board applyDirection direction =
-        canBuildPath (applyDirection direction) Float board
+        canBuildPath (applyDirection direction) board
 
     let getShipPath shipSize (board: Board) =
         let emptyPoints = getEmptyPoints board
 
         let rec allowed point =
-            let applyDirection = makeShipPath shipSize point
+            let applyDirection = makeShipPath shipSize (point, Float)
+            let tmp = chooseDirection board applyDirection
 
             let chosenDirection =
                 WAYS.[..3]
@@ -145,18 +148,20 @@ module Board =
 
         board |> availablePoint |> allowed
 
+    let addCell path cell =
+        path |> List.map (fun elem -> (elem, cell))
+
     let rec approvedPath shipSize board =
         let shipPath = getShipPath shipSize board
+
         let boundsPath = getBoundsPath shipPath
-        let canProceed = canBuildPath boundsPath Bounds board
+        let canProceed = canBuildPath boundsPath board
 
         match canProceed with
         | true -> ((shipPath, boundsPath), board)
         | false -> approvedPath shipSize board
 
     let drawByPath ((shipPath, boundsPath), board) =
-        board
-        |> drawPath boundsPath Bounds
-        |> drawPath shipPath Float
+        board |> drawPath boundsPath |> drawPath shipPath
 
     let drawShip shipSize = approvedPath shipSize >> drawByPath
