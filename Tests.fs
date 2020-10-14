@@ -19,5 +19,5 @@ let ``Don't move the point`` () =
 [<Fact>]
 let ``Move point in specified direction`` () =
     let point = Point(2, 2)
-    let result = movePointByIndex N point 1
+    let result = movePointByIndex N point 0
     Assert.Equal(result, Point(1, 2))
