@@ -78,7 +78,7 @@ module Board =
 
     let concat list1 list2 = list1 @ list2
 
-    let getBoundsPath (shipPath: (Point * Cell) list) =
+    let makeBoundsPath (shipPath: (Point * Cell) list) =
         shipPath
         |> List.fold (fun acc (point, _) ->
             let bounds =
@@ -93,7 +93,7 @@ module Board =
             point
             :: List.init (shipSize - 1) (fun index -> (movePointByIndex direction (fst point) index, Float))
 
-        getBoundsPath result
+        makeBoundsPath result
 
     let allowToDraw (board: Board) (point, cell) =
         let value = board.TryGetValue(point)
@@ -108,11 +108,8 @@ module Board =
 
     let drawCell (board: Board) (point, cell) = board.Add(point, cell)
 
-
     let getRandomElement (points: Point list) =
-        let index = randomNumber points.Length ()
-        let point = points.Item(index)
-        point
+        points.Item(randomNumber points.Length ())
 
     let getEmptyPoints board =
         board
@@ -129,14 +126,13 @@ module Board =
     let availablePoint board =
         (getEmptyPoints >> getRandomElement) board
 
-
     let chooseDirection board applyDirection direction =
         canBuildPath (applyDirection direction) board
 
     let getWholePath shipSize board =
         let emptyPoints = getEmptyPoints board
 
-        let rec allowed point =
+        let rec isAllowed point =
             let applyDirection = makeShipPath shipSize (point, Float)
             let isDirectionOk = chooseDirection board applyDirection
 
@@ -147,11 +143,11 @@ module Board =
             | None ->
                 ((removePoint emptyPoints)
                  >> getRandomElement
-                 >> allowed) point
+                 >> isAllowed) point
 
-        board |> availablePoint |> allowed
+        board |> availablePoint |> isAllowed
 
     let drawPath path board = path |> List.fold drawCell board
 
     let drawShip shipSize board =
-        drawPath (getWholePath shipSize board) board
+        board |> (getWholePath shipSize >> drawPath)
