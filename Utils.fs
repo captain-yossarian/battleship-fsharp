@@ -46,68 +46,6 @@ module Board =
     open State.Constants
     open Random
 
-    let movePoint (Point (row, column): Point) ((rowShift, columnShift): int * int) =
-        Point(row + rowShift, column + columnShift)
-
-    let movePointByIndex directions point index =
-        let shift = 1 + index
-        let movePointBy = movePoint point
-        match directions with
-        | N -> movePointBy (-shift, 0)
-        | E -> movePointBy (0, shift)
-        | S -> movePointBy (shift, 0)
-        | W -> movePointBy (0, -shift)
-        | NE -> movePointBy (-shift, shift)
-        | SE -> movePointBy (shift, shift)
-        | SW -> movePointBy (shift, -shift)
-        | NW -> movePointBy (-shift, -shift)
-
-    let isInRange index =
-        let lowestBound = 0
-        let highestBound = 9
-        index >= lowestBound && index <= highestBound
-
-    let isPointInRange (Point (row, column)) = isInRange row && isInRange column
-
-    let getCellBound point =
-        WAYS
-        |> List.choose (fun way ->
-            match isPointInRange point with
-            | true -> Some(((movePointByIndex way point 0), Bounds))
-            | false -> None)
-
-    let concat list1 list2 = list1 @ list2
-
-    let makeBoundsPath (shipPath: (Point * Cell) list) =
-        shipPath
-        |> List.fold (fun acc (point, _) ->
-            let bounds =
-                getCellBound point
-                |> List.filter (fun (pnt, _) -> not (List.contains (pnt, Float) shipPath))
-
-            acc @ bounds) List.empty
-        |> concat shipPath
-
-    let makeShipPath shipSize point direction =
-        let result =
-            point
-            :: List.init (shipSize - 1) (fun index -> (movePointByIndex direction (fst point) index, Float))
-
-        makeBoundsPath result
-
-    let allowToDraw (board: Board) (point, cell) =
-        let value = board.TryGetValue(point)
-        match (cell, value) with
-        | (Float, (true, Initial)) -> true
-        | (Bounds, (true, Initial))
-        | (Bounds, (true, Bounds))
-        | (Bounds, _) -> true
-        | _ -> false
-
-    let canBuildPath board path = path |> List.forall (allowToDraw board)
-
-    let drawCell (board: Board) (point, cell) = board.Add(point, cell)
-
     let getRandomElement (points: Point list) =
         points.Item(randomNumber points.Length ())
 
@@ -126,6 +64,66 @@ module Board =
     let availablePoint board =
         (getEmptyPoints >> getRandomElement) board
 
+    let movePoint (Point (row, column): Point) ((rowShift, columnShift): int * int) =
+        Point(row + rowShift, column + columnShift)
+
+    let movePointByIndex directions point index =
+        let shift = 1 + index
+        let movePointBy = movePoint point
+        match directions with
+        | N -> movePointBy (-shift, 0)
+        | E -> movePointBy (0, shift)
+        | S -> movePointBy (shift, 0)
+        | W -> movePointBy (0, -shift)
+        | NE -> movePointBy (-shift, shift)
+        | SE -> movePointBy (shift, shift)
+        | SW -> movePointBy (shift, -shift)
+        | NW -> movePointBy (-shift, -shift)
+
+    let isInRange index =
+        let lowestBound = LOW_BOUND
+        let highestBound = HIGH_BOUND
+        index >= lowestBound && index <= highestBound
+
+    let isPointInRange (Point (row, column)) = isInRange row && isInRange column
+
+    let getCellBound point =
+        WAYS
+        |> List.choose (fun way ->
+            match isPointInRange point with
+            | true -> Some(((movePointByIndex way point 0), Bounds))
+            | false -> None)
+
+    let makeBoundsPath (shipPath: (Point * Cell) list) =
+        shipPath
+        |> List.fold (fun acc (point, _) ->
+            List.append
+                acc
+                (getCellBound point
+                 |> List.filter (fun (pnt, _) -> not (List.contains (pnt, Float) shipPath)))) List.empty
+        |> List.append shipPath
+
+    let makeShipPath shipSize point direction =
+        let predicate index =
+            movePointByIndex direction (fst point) index, Float
+
+        point
+        :: List.init (shipSize - 1) predicate
+        |> makeBoundsPath
+
+    let allowToDraw (board: Board) (point, cell) =
+        let value = board.TryGetValue(point)
+        match (cell, value) with
+        | (Float, (true, Initial)) -> true
+        | (Bounds, (true, Initial))
+        | (Bounds, (true, Bounds))
+        | (Bounds, _) -> true
+        | _ -> false
+
+    let canBuildPath board path = path |> List.forall (allowToDraw board)
+
+    let drawCell (board: Board) (point, cell) = board.Add(point, cell)
+
     let getWholePath shipSize board =
         let emptyPoints = getEmptyPoints board
 
@@ -135,7 +133,7 @@ module Board =
             let isDirectionOk direction =
                 (applyDirection >> canBuildPath board) direction
 
-            let chosenDirection = WAYS.[..3] |> List.tryFind isDirectionOk
+            let chosenDirection = MAIN_WAYS |> List.tryFind isDirectionOk
 
             match chosenDirection with
             | (Some direction) -> applyDirection direction

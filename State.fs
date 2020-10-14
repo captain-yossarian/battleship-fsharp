@@ -15,6 +15,9 @@ module Constants =
            { Count = 4; Size = 1 } |]
 
     let WAYS = [ N; E; S; W; NE; SE; SW; NW ]
+    let MAIN_WAYS = WAYS.[..3]
+    let LOW_BOUND = 0
+    let HIGH_BOUND = 9
 
     let cellCount = 99
 
