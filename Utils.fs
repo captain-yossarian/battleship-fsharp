@@ -104,7 +104,7 @@ module Board =
         | (Bounds, _) -> true
         | _ -> false
 
-    let canBuildPath path board = path |> List.forall (allowToDraw board)
+    let canBuildPath board path = path |> List.forall (allowToDraw board)
 
     let drawCell (board: Board) (point, cell) = board.Add(point, cell)
 
@@ -126,15 +126,14 @@ module Board =
     let availablePoint board =
         (getEmptyPoints >> getRandomElement) board
 
-    let chooseDirection board applyDirection direction =
-        canBuildPath (applyDirection direction) board
-
     let getWholePath shipSize board =
         let emptyPoints = getEmptyPoints board
 
         let rec isAllowed point =
             let applyDirection = makeShipPath shipSize (point, Float)
-            let isDirectionOk = chooseDirection board applyDirection
+
+            let isDirectionOk direction =
+                (applyDirection >> canBuildPath board) direction
 
             let chosenDirection = WAYS.[..3] |> List.tryFind isDirectionOk
 
