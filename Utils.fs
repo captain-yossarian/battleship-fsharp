@@ -80,11 +80,19 @@ module Board =
             | true -> Some(((movePointByIndex way point 0), Bounds))
             | false -> None)
 
+    let concat list1 list2 = list1 @ list2
+
     let getBoundsPath (shipPath: (Point * Cell) list) =
         shipPath
-        |> List.fold (fun acc (point, _) -> acc @ getCellBound point) List.empty
+        |> List.fold (fun acc (point, _) ->
+            let bounds =
+                getCellBound point
+                |> List.filter (fun (pnt, _) -> not (List.contains (pnt, Float) shipPath))
 
-    let allowToDraw point (board: Board) cell =
+            acc @ bounds) List.empty
+        |> concat shipPath
+
+    let allowToDraw (board: Board) (point, cell) =
         let value = board.TryGetValue(point)
         match (cell, value) with
         | (Float, (true, Initial)) -> true
@@ -93,15 +101,11 @@ module Board =
         | (Bounds, _) -> true
         | _ -> false
 
-    let canBuildPath path board =
-        path
-        |> List.forall (fun (elem, cell) -> allowToDraw elem board cell)
+    let canBuildPath path board = path |> List.forall (allowToDraw board)
 
-    let drawCell cell (board: Board) point = board.Add(point, cell)
+    let drawCell (board: Board) (point, cell) = board.Add(point, cell)
 
-    let drawPath path board =
-        path
-        |> List.fold (fun acc (point, cell) -> drawCell cell acc point) board
+    let drawPath path board = path |> List.fold drawCell board
 
     let getRandomElement (points: Point list) =
         let index = randomNumber points.Length ()
@@ -111,7 +115,6 @@ module Board =
     let getEmptyPoints board =
         board
         |> Map.fold (fun (acc: Point list) key value ->
-
             match value with
             | Initial -> key :: acc
             | _ -> acc) List.empty
@@ -152,16 +155,15 @@ module Board =
         path |> List.map (fun elem -> (elem, cell))
 
     let rec approvedPath shipSize board =
-        let shipPath = getShipPath shipSize board
+        let path =
+            getShipPath shipSize board |> getBoundsPath
 
-        let boundsPath = getBoundsPath shipPath
-        let canProceed = canBuildPath boundsPath board
+        let canProceed = board |> canBuildPath path
 
         match canProceed with
-        | true -> ((shipPath, boundsPath), board)
+        | true -> (path, board)
         | false -> approvedPath shipSize board
 
-    let drawByPath ((shipPath, boundsPath), board) =
-        board |> drawPath boundsPath |> drawPath shipPath
+    let drawByPath (path, board) = board |> drawPath path
 
     let drawShip shipSize = approvedPath shipSize >> drawByPath
