@@ -11,4 +11,4 @@ module Reducers =
         | MakeShip { Size = size } ->
             let { Board = board } = state
             { state with
-                  Board = drawShip size board board }
+                  Board = drawShip size board }

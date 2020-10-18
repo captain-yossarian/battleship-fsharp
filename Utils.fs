@@ -128,23 +128,24 @@ module Board =
         let emptyPoints = getEmptyPoints board
 
         let rec isAllowed point =
-            let applyDirection = makeShipPath shipSize (point, Float)
 
-            let isDirectionOk direction =
-                (applyDirection >> canBuildPath board) direction
-
-            let chosenDirection = MAIN_WAYS |> List.tryFind isDirectionOk
-
-            match chosenDirection with
-            | (Some direction) -> applyDirection direction
-            | None ->
+            let doAgain emptyPoints point =
                 ((removePoint emptyPoints)
                  >> getRandomElement
                  >> isAllowed) point
 
+            let applyDirection = makeShipPath shipSize (point, Float)
+
+            let isDirectionOk direction =
+                direction |> applyDirection |> canBuildPath board
+
+            match MAIN_WAYS |> List.tryFind isDirectionOk with
+            | (Some direction) -> applyDirection direction
+            | None -> doAgain emptyPoints point
+
         board |> availablePoint |> isAllowed
 
-    let drawPath path board = path |> List.fold drawCell board
-
     let drawShip shipSize board =
-        board |> (getWholePath shipSize >> drawPath)
+        board
+        |> getWholePath shipSize
+        |> List.fold drawCell board
